@@ -1,12 +1,24 @@
-FROM node:22-slim
-
-RUN apt-get update && apt-get install -y chromium-browser
+FROM node:20-slim
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
 
-COPY src ./src
-COPY tsconfig.json ./
+# Install system deps that Playwright needs
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxkbcommon0 \
+    libgtk-3-0 \
+    libgbm1 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package*.json./
+RUN npm ci
+
+COPY..
+
+# This runs "playwright install chromium --with-deps" from package.json
+RUN npm run postinstall
 
 CMD ["npm", "start"]
