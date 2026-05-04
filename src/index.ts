@@ -1,14 +1,25 @@
+cat > src/index.ts << 'EOF'
 import { chromium } from 'playwright'
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
+import { resolve } from 'path'
 
-dotenv.config()
+// Force load .env from the correct location
+dotenv.config({ path: resolve(__dirname, '../.env') })
 
-const ATAMIS_EMAIL = process.env.ATAMIS_EMAIL!
-const SUPABASE_URL = process.env.SUPABASE_URL!
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY!
+// Hardcoded fallback in case .env doesn't load (remove after testing)
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://dwiioeurbbvhsijvrzsq.supabase.co"
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3aWlvZXVyYmJ2aHNpanZyenNxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI3NDUxNiwiZXhwIjoyMDkxODUwNTE2fQ.tuk094g1MjkMpgzfnl-tB_UGcft5JQrbv_BAhiOSNq0"
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+const ATAMIS_EMAIL = process.env.ATAMIS_EMAIL || "founder@sweetlyveganprotocol.com.hf"
+const ATAMIS_PASSWORD = process.env.ATAMIS_PASSWORD || "9M$$!#X!-6z.bRi"
+
+console.log('=== CONFIGURATION ===')
+console.log('SUPABASE_URL:', SUPABASE_URL)
+console.log('SUPABASE_SERVICE_KEY exists:', !!SUPABASE_SERVICE_KEY)
+console.log('ATAMIS_EMAIL:', ATAMIS_EMAIL)
+console.log('===================')
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 async function main() {
@@ -27,7 +38,7 @@ async function main() {
   const page = await context.newPage()
 
   try {
-    // 1. Login
+    // 1. Login to Atamis
     console.log('Navigating to Atamis...')
     await page.goto('https://auth.finance.gov.uk/login', { waitUntil: 'networkidle' })
 
@@ -39,22 +50,17 @@ async function main() {
     await page.waitForURL('**/lightning/**', { timeout: 60000 })
     console.log('Logged into Atamis successfully')
 
-    // 2. Test Supabase
+    // 2. Test Supabase connection
     console.log('Testing Supabase connection...')
     const { error: testError } = await supabase
       .from('tenders')
-      .insert({
-        title: 'TEST - Atamis Integration',
-        value: '10000',
-        source: 'ATAMIS',
-        deadline: new Date('2025-12-31').toISOString()
-      })
-      .select()
+      .select('count')
+      .limit(1)
 
     if (testError) {
       console.log('Supabase error:', testError.message)
     } else {
-      console.log('Supabase test successful')
+      console.log('Supabase connection successful')
     }
 
     // 3. Navigate to opportunities
@@ -96,6 +102,7 @@ async function main() {
   } catch (err) {
     console.error('Scraper failed:', err)
     await page.screenshot({ path: 'error.png', fullPage: true })
+    console.log('Screenshot saved: error.png')
   } finally {
     await browser.close()
     console.log('=== ATAMIS SCRAPER END ===')
@@ -103,3 +110,4 @@ async function main() {
 }
 
 main().catch(console.error)
+EOF
