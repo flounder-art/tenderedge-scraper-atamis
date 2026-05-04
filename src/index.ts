@@ -16,35 +16,42 @@ async function scrapeAtamis() {
       throw new Error('ATAMIS_USERNAME and ATAMIS_PASSWORD required');
     }
 
-    // TODO: Implement Atamis login & scraping
-    // For now, log placeholder
-    console.log('Atamis credentials loaded, ready to scrape');
+    // TODO: Implement actual Atamis login & scraping with Playwright
+    const tendersFound: any[] = []; // Replace with actual scraped tenders
 
-    // Example tender structure (replace with actual scraping)
-    const tenderData = {
-      source: 'ATAMIS',
-      source_id: 'atamis_placeholder',
-      title: 'Placeholder Tender',
-      value: null,
-      deadline: new Date().toISOString().split('T')[0],
-      buyer: 'NHS Trust',
-      cpv_codes: ['60000000-8'],
-      description: 'Placeholder',
-      status: 'OPEN',
-      url: 'https://atamis.example.com/tender/placeholder',
-      scraped_at: new Date().toISOString()
-    };
+    console.log(`[DEBUG] Found ${tendersFound.length} tenders on Atamis`);
 
-    // Upsert to tenders table
-    const { error } = await supabase
-      .from('tenders')
-      .upsert([tenderData], { onConflict: 'url' });
+    for (const tender of tendersFound) {
+      console.log(`[DEBUG] Tender title: ${tender.title}`);
+      console.log(`[DEBUG] Tender value: ${tender.value}`);
+      console.log(`[DEBUG] Full tender: ${JSON.stringify(tender, null, 2)}`);
 
-    if (error) throw error;
-    console.log('Tender upserted successfully');
+      try {
+        const { data, error } = await supabase
+          .from('tenders')
+          .insert({
+            source: 'ATAMIS',
+            source_id: tender.id,
+            title: tender.title,
+            value: tender.value || null,
+            deadline: tender.deadline,
+            buyer: tender.buyer || 'Unknown',
+            cpv_codes: tender.cpv_codes || [],
+            description: tender.description || '',
+            status: tender.status || 'OPEN',
+            url: tender.url,
+            scraped_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+        console.log(`[DEBUG] Insert successful for ${tender.title}`);
+      } catch (err) {
+        console.error(`[ERROR] Insert failed: ${err}`);
+      }
+    }
 
   } catch (err) {
-    console.error('ATAMIS scraper error:', err);
+    console.error('ATAMIS scraper fatal error:', err);
     process.exit(1);
   }
 
