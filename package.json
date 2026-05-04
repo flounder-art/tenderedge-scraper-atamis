@@ -1,14 +1,6 @@
 {
   "scripts": {
-    "start": "npx tsx src/index.ts",
-    "postinstall": "playwright install chromium --with-deps"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "dotenv": "^16.4.5",
-    "playwright": "^1.44.0"
-  },
-  "devDependencies": {
-    "tsx": "^4.7.0"
+    "scraper": "npx ts-node scraper.ts",
+    "scraper:prod": "node dist/scraper.js"
   }
 }
