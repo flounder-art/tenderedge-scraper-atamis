@@ -13,10 +13,10 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json./
+COPY package*.json ./
 RUN npm ci
 
-COPY..
+COPY . .
 
 # This runs "playwright install chromium --with-deps" from package.json
 RUN npm run postinstall
