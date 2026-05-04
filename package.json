@@ -1,6 +1,16 @@
 {
   "scripts": {
-    "scraper": "npx ts-node scraper.ts",
-    "scraper:prod": "node dist/scraper.js"
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.0"
   }
 }
