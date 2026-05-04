@@ -11,7 +11,7 @@ async function scrapeAtamis() {
   
   const browser = await chromium.launch({ 
     headless: true,
-    channel: 'chromium', // Use full Chromium, not headless_shell
+    channel: 'chromium',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -33,13 +33,11 @@ async function scrapeAtamis() {
     
     console.log('Page loaded, looking for login...');
     
-    // Salesforce login selectors - try multiple
     await page.waitForSelector('input[type="email"], #username, input[name="username"]', { timeout: 30000 });
     await page.fill('input[type="email"], #username, input[name="username"]', process.env.ATAMIS_USERNAME!);
     await page.fill('input[type="password"], #password, input[name="pw"]', process.env.ATAMIS_PASSWORD!);
     await page.click('input[type="submit"], button[type="submit"], .loginButton');
     
-    // Wait for redirect back to home.jsp after login
     await page.waitForURL('**/home/home.jsp', { timeout: 30000 });
     console.log('Logged into Atamis successfully');
     
